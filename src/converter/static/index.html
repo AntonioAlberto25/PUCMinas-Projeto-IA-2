@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CodeShift Studio</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+    :root {
+      --bg: #f5f7f6;
+      --panel: #ffffff;
+      --muted-panel: #f8faf9;
+      --line: #dde4e0;
+      --ink: #14201d;
+      --soft: #5f6f69;
+      --brand: #1d7a66;
+      --brand-2: #39a78d;
+      --danger: #c2342d;
+      --warn: #9a6a00;
+      --ok: #1a7f46;
+      --radius: 14px;
+      --shadow: 0 10px 28px rgba(20, 32, 29, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      color: var(--ink);
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f9fbfa 0%, var(--bg) 100%);
+    }
+
+    .app {
+      width: min(1180px, 94vw);
+      margin: 24px auto 30px;
+      display: grid;
+      gap: 16px;
+      animation: fadeUp 240ms ease-out;
+    }
+
+    .header {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--soft);
+      font-size: 0.92rem;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--muted-panel);
+      color: #355149;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.08fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 0.92rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #355149;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+
+    label {
+      color: var(--soft);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      border: 1px solid #cfd8d3;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 9px 10px;
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(29, 122, 102, 0.15);
+    }
+
+    textarea {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      resize: vertical;
+      min-height: 180px;
+      max-height: 360px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      color: #476159;
+      margin: 2px 0;
+    }
+
+    .toggle input {
+      width: auto;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 13px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      color: #fff;
+      background: linear-gradient(120deg, var(--brand), var(--brand-2));
+    }
+
+    .secondary {
+      color: #3f5850;
+      background: #eef3f1;
+      border: 1px solid #d6dfda;
+    }
+
+    .status {
+      min-height: 19px;
+      margin-top: 2px;
+      font-size: 0.82rem;
+      color: var(--soft);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      font-weight: 600;
+    }
+
+    .status.error {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .rag-box {
+      border: 1px dashed #cfdbd5;
+      border-radius: 10px;
+      background: #fbfdfc;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .output-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .output {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 7px;
+    }
+
+    .output h3 {
+      margin: 0;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #46665c;
+    }
+
+    pre {
+      margin: 0;
+      border: 1px solid #dce6e1;
+      border-radius: 8px;
+      background: #f9fbfa;
+      padding: 9px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.83rem;
+      line-height: 1.45;
+      max-height: 230px;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+      color: var(--warn);
+    }
+
+    .ok {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--soft);
+      font-size: 0.88rem;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .meta {
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      textarea {
+        min-height: 160px;
+      }
+
+      pre {
+        max-height: 190px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="header">
+      <div>
+        <h1 class="title">CodeShift Studio</h1>
+        <p class="subtitle">Conversão assistida por LLM com contexto RAG da sua empresa.</p>
+      </div>
+      <div class="meta">
+        <div class="pill" id="modePill">Modo: carregando...</div>
+        <div class="pill" id="ragPill">RAG: verificando...</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <article class="card">
+        <h2>Entrada</h2>
+
+        <div class="row">
+          <div class="field">
+            <label for="target_language">Linguagem alvo</label>
+            <select id="target_language">
+              <option value="javascript">javascript</option>
+              <option value="typescript">typescript</option>
+              <option value="python">python</option>
+              <option value="java">java</option>
+              <option value="cpp">cpp</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="source_language">Linguagem origem (opcional)</label>
+            <input id="source_language" type="text" placeholder="python, java, javascript..." />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="company_name">Empresa/cliente (RAG)</label>
+            <input id="company_name" type="text" placeholder="Ex.: Empresa X" />
+          </div>
+          <div class="field">
+            <label for="rag_enabled">Usar contexto RAG</label>
+            <select id="rag_enabled">
+              <option value="true">Ativado</option>
+              <option value="false">Desativado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="raw_code">Código de entrada</label>
+          <textarea id="raw_code" placeholder="Cole aqui o trecho de código para conversão"></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="convertBtn">Converter código</button>
+          <button class="secondary" id="fillExampleBtn" type="button">Carregar exemplo</button>
+          <button class="secondary" id="clearBtn" type="button">Limpar</button>
+        </div>
+
+        <div class="rag-box">
+          <strong>Base de contexto (PDF)</strong>
+          <div class="field">
+            <label for="pdf_files">Arquivos PDF</label>
+            <input id="pdf_files" type="file" accept=".pdf" multiple />
+          </div>
+          <div class="actions">
+            <button class="secondary" id="uploadPdfBtn" type="button">Enviar PDFs</button>
+            <button class="secondary" id="refreshRagBtn" type="button">Atualizar status</button>
+          </div>
+          <div class="status" id="ragStatusText">RAG: carregando...</div>
+        </div>
+
+        <div class="status" id="statusText"></div>
+      </article>
+
+      <article class="card">
+        <h2>Saída</h2>
+
+        <div class="output-stack">
+          <section class="output">
+            <h3>Código convertido</h3>
+            <pre id="convertedOutput">Aguardando conversão...</pre>
+          </section>
+
+          <section class="output">
+            <h3>Diff comparativo</h3>
+            <pre id="diffOutput">Diff desativado ou sem resultado.</pre>
+          </section>
+
+          <section class="output">
+            <h3>Validação</h3>
+            <div id="validationSummary" class="muted">Sem dados ainda.</div>
+            <ul id="warningsList"></ul>
+          </section>
+
+          <section class="output">
+            <h3>Contexto RAG aplicado</h3>
+            <div id="ragSummary" class="muted">Sem contexto utilizado.</div>
+            <ul id="ragSourcesList"></ul>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const convertBtn = document.getElementById("convertBtn");
+    const fillExampleBtn = document.getElementById("fillExampleBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const uploadPdfBtn = document.getElementById("uploadPdfBtn");
+    const refreshRagBtn = document.getElementById("refreshRagBtn");
+
+    const modePill = document.getElementById("modePill");
+    const ragPill = document.getElementById("ragPill");
+
+    const statusText = document.getElementById("statusText");
+    const ragStatusText = document.getElementById("ragStatusText");
+
+    const rawCodeInput = document.getElementById("raw_code");
+    const targetLanguageInput = document.getElementById("target_language");
+    const sourceLanguageInput = document.getElementById("source_language");
+    const companyNameInput = document.getElementById("company_name");
+    const ragEnabledInput = document.getElementById("rag_enabled");
+    const pdfFilesInput = document.getElementById("pdf_files");
+
+    const convertedOutput = document.getElementById("convertedOutput");
+    const diffOutput = document.getElementById("diffOutput");
+    const validationSummary = document.getElementById("validationSummary");
+    const warningsList = document.getElementById("warningsList");
+    const ragSummary = document.getElementById("ragSummary");
+    const ragSourcesList = document.getElementById("ragSourcesList");
+
+    function setStatus(message, type = "info") {
+      statusText.textContent = message;
+      statusText.className = "status";
+      if (type === "ok") statusText.classList.add("ok");
+      if (type === "error") statusText.classList.add("error");
+    }
+
+    function setRagStatus(message, type = "info") {
+      ragStatusText.textContent = message;
+      ragStatusText.className = "status";
+      if (type === "ok") ragStatusText.classList.add("ok");
+      if (type === "error") ragStatusText.classList.add("error");
+    }
+
+    async function loadHealth() {
+      try {
+        const response = await fetch("/health");
+        if (!response.ok) throw new Error("Falha no health");
+        const health = await response.json();
+        modePill.textContent = `Modo: ${health.mode}`;
+      } catch (error) {
+        modePill.textContent = "Modo: indisponível";
+      }
+    }
+
+    async function loadRagStatus() {
+      try {
+        const response = await fetch("/rag/status");
+        if (!response.ok) throw new Error("Falha no status RAG");
+        const data = await response.json();
+        setRagStatus(`RAG ativo: ${data.documents} PDF(s), ${data.chunks} chunk(s).`, "ok");
+        ragPill.textContent = `RAG: ${data.documents} docs`;
+      } catch (error) {
+        setRagStatus("RAG indisponível no momento.", "error");
+        ragPill.textContent = "RAG: erro";
+      }
+    }
+
+    async function uploadPdfs() {
+      const files = Array.from(pdfFilesInput.files || []);
+      if (!files.length) {
+        setRagStatus("Selecione ao menos um PDF.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      files.forEach(file => formData.append("files", file));
+
+      uploadPdfBtn.disabled = true;
+      setRagStatus("Enviando e indexando PDFs...");
+
+      try {
+        const response = await fetch("/rag/upload-pdfs", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || `Erro HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        setRagStatus(`Upload concluído: ${data.uploaded} arquivo(s), ${data.chunks_added} chunk(s).`, "ok");
+        await loadRagStatus();
+      } catch (error) {
+        setRagStatus(`Falha no upload: ${error.message}`, "error");
+      } finally {
+        uploadPdfBtn.disabled = false;
+      }
+    }
+
+    function renderRagResult(data) {
+      const used = Boolean(data.rag_context_used);
+      ragSummary.innerHTML = used
+        ? `<span class="ok">Contexto empresarial aplicado na conversão.</span>`
+        : `<span class="muted">Conversão sem contexto de PDF.</span>`;
+
+      ragSourcesList.innerHTML = "";
+      const sources = data.rag_sources || [];
+      if (!sources.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem fontes recuperadas.";
+        li.className = "muted";
+        ragSourcesList.appendChild(li);
+        return;
+      }
+
+      sources.forEach(source => {
+        const li = document.createElement("li");
+        li.textContent = source;
+        li.className = "muted";
+        ragSourcesList.appendChild(li);
+      });
+    }
+
+    function renderResult(data) {
+      convertedOutput.textContent = data.converted_code || "Sem código convertido";
+      diffOutput.textContent = data.diff || "Diff desativado ou sem alterações";
+      renderRagResult(data);
+
+      const syntaxOk = data.report?.syntax_ok;
+      const syntaxLabel = syntaxOk ? "Sintaxe: OK" : "Sintaxe: com problemas";
+      validationSummary.innerHTML = syntaxOk
+        ? `<span class="ok">${syntaxLabel}</span>`
+        : `<span class="error">${syntaxLabel}</span>`;
+
+      warningsList.innerHTML = "";
+      const warnings = data.report?.warnings || [];
+      if (!warnings.length) {
+        const li = document.createElement("li");
+        li.textContent = "Sem warnings.";
+        li.className = "ok";
+        warningsList.appendChild(li);
+      } else {
+        warnings.forEach(warning => {
+          const li = document.createElement("li");
+          li.textContent = warning;
+          warningsList.appendChild(li);
+        });
+      }
+    }
+
+    async function convertCode() {
+      const rawCode = rawCodeInput.value.trim();
+      if (!rawCode) {
+        setStatus("Cole um trecho de código antes de converter.", "error");
+        return;
+      }
+
+      const payload = {
+        raw_code: rawCode,
+        target_language: targetLanguageInput.value.trim(),
+        source_language: sourceLanguageInput.value.trim() || null,
+        company_name: companyNameInput.value.trim() || null,
+        rag_enabled: ragEnabledInput.value === "true",
+        include_diff: true,
+        style: {
+          language: "pt-br",
+          naming: "camelCase",
+          patterns: ["clean code", "early return"],
+        },
+      };
+
+      convertBtn.disabled = true;
+      setStatus("Convertendo com o motor LLM...");
+
+      try {
+        const response = await fetch("/convert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || `Erro HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderResult(data);
+        setStatus(`Conversão concluída. Origem: ${data.source_language}.`, "ok");
+      } catch (error) {
+        setStatus(`Falha na conversão: ${error.message}`, "error");
+      } finally {
+        convertBtn.disabled = false;
+      }
+    }
+
+    function fillExample() {
+      rawCodeInput.value = [
+        "def calcular_total(valores):",
+        "    total = 0",
+        "    for valor in valores:",
+        "        total += valor",
+        "    return total",
+      ].join("\n");
+      sourceLanguageInput.value = "python";
+      targetLanguageInput.value = "javascript";
+      setStatus("Exemplo carregado.");
+    }
+
+    function clearAll() {
+      rawCodeInput.value = "";
+      convertedOutput.textContent = "Aguardando conversão...";
+      diffOutput.textContent = "Diff desativado ou sem resultado.";
+      validationSummary.textContent = "Sem dados ainda.";
+      warningsList.innerHTML = "";
+      ragSummary.textContent = "Sem contexto utilizado.";
+      ragSourcesList.innerHTML = "";
+      setStatus("Campos limpos.");
+    }
+
+    convertBtn.addEventListener("click", convertCode);
+    fillExampleBtn.addEventListener("click", fillExample);
+    clearBtn.addEventListener("click", clearAll);
+    uploadPdfBtn.addEventListener("click", uploadPdfs);
+    refreshRagBtn.addEventListener("click", loadRagStatus);
+
+    loadHealth();
+    loadRagStatus();
+  </script>
+</body>
+</html>
