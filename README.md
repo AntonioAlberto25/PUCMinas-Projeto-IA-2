@@ -173,7 +173,7 @@ Resposta exemplo:
 
 ## Fluxo RAG da empresa
 
-1. Envie PDFs da empresa pela interface (secao Base RAG)
+1. Envie PDFs da empresa pela interface (seção Base RAG)
 2. Informe o nome da empresa no campo Empresa/cliente
 3. Durante a conversao, a API recupera trechos relevantes dos PDFs
 4. O contexto recuperado e enviado ao LLM para seguir padroes arquiteturais
