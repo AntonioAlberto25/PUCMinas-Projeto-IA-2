@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from typing import Protocol
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import requests
 
@@ -77,6 +78,29 @@ class OpenAICompatibleLLMClient:
             ],
         }
 
+        if self._is_google_native_endpoint(self.api_url):
+            response = self._request_google_generate_content(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+            )
+            content = self._extract_google_content(response)
+        else:
+            response = self._request_openai_compatible(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+            )
+            content = self._extract_openai_content(response)
+
+        result = content.strip()
+        if not result:
+            raise LLMRequestError("LLM returned empty content.")
+        return result
+
+    @staticmethod
+    def _is_google_native_endpoint(api_url: str) -> bool:
+        return "generativelanguage.googleapis.com" in api_url and "generateContent" in api_url
+
+    def _request_openai_compatible(self, *, system_prompt: str, user_prompt: dict[str, object]) -> dict[str, object]:
         payload = {
             "model": self.model,
             "messages": [
@@ -97,6 +121,49 @@ class OpenAICompatibleLLMClient:
             json=payload,
             timeout=self.timeout_seconds,
         )
+        body = self._raise_for_status_and_json(response)
+        if not isinstance(body, dict):
+            raise LLMRequestError("LLM response format is invalid or missing content.")
+        return body
+
+    def _request_google_generate_content(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: dict[str, object],
+    ) -> dict[str, object]:
+        prompt_text = json.dumps(user_prompt, ensure_ascii=True)
+        payload = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": prompt_text}],
+                }
+            ],
+            "generationConfig": {"temperature": 0.1},
+        }
+
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(
+            self._attach_google_api_key(self.api_url, self.api_key),
+            headers=headers,
+            json=payload,
+            timeout=self.timeout_seconds,
+        )
+        body = self._raise_for_status_and_json(response)
+        if not isinstance(body, dict):
+            raise LLMRequestError("LLM response format is invalid or missing content.")
+        return body
+
+    @staticmethod
+    def _attach_google_api_key(api_url: str, api_key: str) -> str:
+        parsed = urlsplit(api_url)
+        query_pairs = dict(parse_qsl(parsed.query, keep_blank_values=True))
+        query_pairs.setdefault("key", api_key)
+        return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query_pairs), parsed.fragment))
+
+    def _raise_for_status_and_json(self, response: requests.Response) -> object:
         try:
             response.raise_for_status()
         except requests.HTTPError as exc:
@@ -115,15 +182,41 @@ class OpenAICompatibleLLMClient:
             raise LLMRequestError(f"Network error while calling LLM endpoint: {exc}") from exc
 
         try:
-            body = response.json()
-            content = body["choices"][0]["message"]["content"]
-        except (ValueError, KeyError, IndexError, TypeError) as exc:
+            return response.json()
+        except ValueError as exc:
             raise LLMRequestError("LLM response format is invalid or missing content.") from exc
 
-        result = str(content).strip()
-        if not result:
-            raise LLMRequestError("LLM returned empty content.")
-        return result
+    @staticmethod
+    def _extract_openai_content(body: dict[str, object]) -> str:
+        try:
+            choices = body["choices"]
+            first_choice = choices[0]
+            message = first_choice["message"]
+            content = message["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LLMRequestError("LLM response format is invalid or missing content.") from exc
+
+        return str(content)
+
+    @staticmethod
+    def _extract_google_content(body: dict[str, object]) -> str:
+        try:
+            candidates = body["candidates"]
+            first_candidate = candidates[0]
+            content = first_candidate["content"]
+            parts = content["parts"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LLMRequestError("LLM response format is invalid or missing content.") from exc
+
+        text_parts = []
+        for part in parts:
+            if isinstance(part, dict) and isinstance(part.get("text"), str):
+                text_parts.append(part["text"])
+
+        merged = "\n".join(text_parts).strip()
+        if not merged:
+            raise LLMRequestError("LLM response format is invalid or missing content.")
+        return merged
 
 
 class MockLLMClient:
