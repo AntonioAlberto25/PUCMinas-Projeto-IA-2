@@ -8,7 +8,7 @@ import sys
 from io import StringIO
 import re
 
-st.set_page_config(page_title="IA Code Conversion (ReAct+Gemini)", layout="wide")
+st.set_page_config(page_title="Agente Engenheiro", layout="wide")
 
 @st.cache_resource
 def init_agent():
@@ -40,7 +40,7 @@ def main():
     setup_environment()
     agent = init_agent()
 
-    st.title("🤖 IA Agent - Code Conversion Tool")
+    st.title("🤖 IA Agent - Agente que converte e testa codigo")
     st.markdown("Converta seu código para qualquer linguagem de destino com testes unitários automáticos e validação, usando o poder do **Agent ReAct** e **Google Gemini**.")
 
     with st.sidebar:

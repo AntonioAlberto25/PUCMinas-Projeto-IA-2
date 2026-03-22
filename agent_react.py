@@ -14,7 +14,7 @@ def create_agent():
     Usa langgraph.prebuilt.create_react_agent com o parâmetro `prompt`
     (substitui o deprecated `state_modifier`).
     """
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     
     tools = [
         query_rag,
