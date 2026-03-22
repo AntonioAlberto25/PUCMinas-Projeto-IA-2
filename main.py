@@ -1,72 +1,53 @@
-import os
-from dotenv import load_dotenv
+from __future__ import annotations
 
 from agent_react import create_agent
-from rag.loader import load_and_chunk_pdfs
-from rag.embeddings import create_and_store_embeddings
+from providers import ensure_env_config
 
-def initialize_rag():
-    print("Iniciando carregamento do RAG...")
-    docs_dir = os.path.join(os.path.dirname(__file__), "docs")
-    
-    if not os.path.exists(docs_dir):
-        os.makedirs(docs_dir)
-        print(f"Diretório {docs_dir} criado. Adicione PDFs lá se desejar testar o RAG.")
-    
-    chunks = load_and_chunk_pdfs(docs_dir)
-    if chunks:
-        print(f"Foram encontrados {len(chunks)} trechos nos PDFs. Criando banco vetorial...")
-        create_and_store_embeddings(chunks)
-        print("Banco FAISS criado com sucesso.")
-    else:
-        print("Continuando sem banco de RAG atualizado.")
-        
-def main():
-    load_dotenv()
-    
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("AVISO: A variável de ambiente OPENAI_API_KEY não foi encontrada.")
-        print("Por favor, crie um arquivo .env e adicione sua chave lá.")
+
+def main() -> None:
+    is_ok, message = ensure_env_config()
+    if not is_ok:
+        print(f"Configuracao invalida: {message}")
         return
 
-    # 1. Carregar/Inicializar base de documentos FAISS
-    initialize_rag()
-    
-    # 2. Iniciar Agent
-    print("\n" + "="*50)
-    print("🤖 IA Agent - Code Conversion Tool (ReAct)")
-    print("="*50)
-    
     agent = create_agent()
-    
-    # Exemplo interativo com CLI simples
+
+    print("\n" + "=" * 60)
+    print("Agente ReAct - Geracao de Testes Unitarios")
+    print("=" * 60)
+
     while True:
-        print("\nPara sair digite 'exit' ou pressione Ctrl+C")
-        source_code_input = input("Digite ou cole o código original (em uma linha ou informe um caminho de arquivo, ex: 'def sum(a,b): return a + b'):\n> ")
-        if source_code_input.lower() in ("exit", "quit"):
+        print("\nDigite 'exit' para sair.")
+        code_input = input("Cole o codigo ja convertido ou caminho de arquivo:\n> ").strip()
+        if code_input.lower() in {"exit", "quit"}:
             break
-            
-        target_lang = input("Linguagem alvo (ex: javascript, go): ")
-        
-        # Tratamento de input simples para arquivos locais
-        if os.path.exists(source_code_input):
-            with open(source_code_input, "r", encoding="utf-8") as f:
-                source_code = f.read()
-        else:
-            source_code = source_code_input
-            
-        input_task = f"Converta este código para {target_lang}. Código original: ```\n{source_code}\n```"
-        
-        # O agent tem acesso ao histórico se necessário, ou só RAG
-        print("\nIniciando Ciclo ReAct...\n")
+
+        language = input("Linguagem do codigo (ex: python, java, javascript): ").strip() or "python"
+        framework = input("Framework de teste (ex: pytest, jest, junit): ").strip() or "pytest"
+        instructions = input("Instrucoes adicionais (opcional): ").strip()
+
         try:
-            response = agent.invoke({"messages": [("user", input_task)]})
-            final_answer = response["messages"][-1].content
-            print("\n================ RESULTADO FINAL ================\n")
-            print(final_answer)
-            print("\n=======================================================\n")
-        except Exception as e:
-            print(f"\nErro fatal durante execução do Agente: {str(e)}")
+            try:
+                with open(code_input, "r", encoding="utf-8") as file_handle:
+                    converted_code = file_handle.read()
+            except OSError:
+                converted_code = code_input
+
+            task = (
+                "Use a ferramenta generate_unit_tests para criar os testes com os dados abaixo:\n"
+                f"language={language}\n"
+                f"framework={framework}\n"
+                f"extra_instructions={instructions or 'Nenhuma'}\n"
+                f"converted_code=```\n{converted_code}\n```"
+            )
+
+            response = agent.invoke({"messages": [("user", task)]})
+            print("\n--- TESTES GERADOS ---\n")
+            print(response["messages"][-1].content)
+            print("\n----------------------\n")
+        except Exception as exc:
+            print(f"Falha ao gerar testes: {exc}")
+
 
 if __name__ == "__main__":
     main()

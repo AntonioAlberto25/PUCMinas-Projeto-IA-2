@@ -1,9 +1,5 @@
 langchain
-langchain-google-genai
-langchain-community
-faiss-cpu
-pypdf
-pytest
+langgraph
+langchain-openai
 python-dotenv
-tiktoken
 streamlit
