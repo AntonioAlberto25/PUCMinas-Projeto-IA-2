@@ -1,5 +1,14 @@
 # ReAct Unit Test Generator
 
+## 👥 Integrantes
+
+- **Antonio Alberto Silva Garcia** — 237991
+- **Jhonatas Junnior Oliveira da Silva** — 229904
+- **Guilherme de Mendonça de Lima** — 229994
+- **Luis Carlos Laoiza Fernandez** — 1601656
+
+---
+
 Projeto reestruturado para um unico objetivo:
 - Receber codigo ja convertido
 - Gerar testes unitarios com um agente ReAct
